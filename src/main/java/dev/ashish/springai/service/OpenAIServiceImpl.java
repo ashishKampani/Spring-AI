@@ -4,15 +4,14 @@ import dev.ashish.springai.model.Product;
 import dev.ashish.springai.model.Question;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.Generation;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.parser.BeanOutputParser;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -24,12 +23,12 @@ import java.util.Map;
 public class OpenAIServiceImpl implements OpenAIService {
 
     private final Logger logger = LoggerFactory.getLogger(OpenAIServiceImpl.class);
-    private final ChatClient chatClient;
+    private final ChatModel chatModel;
 
     private final SimpleVectorStore vectorStore;
 
-    public OpenAIServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient, SimpleVectorStore vectorStore) {
-        this.chatClient = chatClient;
+    public OpenAIServiceImpl(ChatModel chatModel, SimpleVectorStore vectorStore) {
+        this.chatModel = chatModel;
         this.vectorStore = vectorStore;
     }
 
@@ -55,8 +54,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 String.join("\n", contentList)));
 
         logger.info("Calling chat client with prompt...");
-        Generation generation = chatClient.call(prompt).getResult();
-
+        Generation generation = chatModel.call(prompt).getResult();
         logger.info("Retrieving response content...");
         return outputParser.parse(generation.getOutput().getContent());
     }
